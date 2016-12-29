@@ -6,6 +6,8 @@ from pyltp import Parser
 from pyltp import SementicRoleLabeller
 import re
 import argparse
+import sys
+#change the path to your model directory
 model_dir = "/home/han/Ltp/3.3.1/ltp_data/"
 comma_punc=re.compile(r"[，：,: ]".decode("utf8"))
 period_punc=re.compile(r"[。？！；.?!;]".decode("utf8"))
@@ -37,7 +39,7 @@ def parse(sent):
   	sems = str(roles[0].index) + " " + " ".join(["%s:(%d,%d)" % (arg.name, arg.range.start, arg.range.end) for arg in roles[0].arguments])
   except IndexError:
 	return False
-  print sems
+  #print sems
   sems = sems.split()
   has_sub = False
   has_obj = False
@@ -56,6 +58,7 @@ def parse(sent):
 	return "el"
 
 def segment(paragraph):
+#paragraph must be decoded as utf8 when calling this function
 	pg = re.split(period_punc,paragraph)
         #print "\n".join(pg)
 	pg = [s for s in pg if len(s)!=0]
@@ -74,15 +77,38 @@ def segment(paragraph):
 			else:
 				out = out + sents[i] + " "
 		out = out + sents[len(sents)-1]
+		out = re.sub(" ","",out)
 		out = out.strip() + "\n"
+
 	return out.encode("utf8")
 	
-out = segment(u"对于学校，史卫忠作出以下建议：一是要做好学生的法治教育工作。中央要求，把法治教育纳入国民教育体系，在中小学设立法治知识课程，加强对普通高校、职业院校学生的法治宣传，配齐配强法治副校长、辅导员，这些要求要落到实处。 二是严格学校日常安全管理。要健全应急处置预案，做到早期预警、事中处理、事后干预。要注重家校沟通，对可能的欺凌和暴力行为早发现、早预防、早控制。对发现的欺凌和暴力事件线索，要早核实、早处置，避免小事拖大。对违法违规学生要进必要的教育、惩戒，涉嫌犯罪的要及时通知公安机关。 三是加强校园及校园周边地区安保措施。全面排查校园安全隐患，实现封闭式管理，强化警校联动，健全校园视频监控系统、紧急报警装置，接入公安机关、教育部门监控和报警平台，逐步建立校园安全网上巡查系统。检察机关也愿意和学校、公安机关等部门密切合作，共同做好上述工作。")
+#out = segment(u" 因此，我很高兴地告诉你们， 我们花了三年时间 去完成这项任务，完成最终稿， 并使他们真正应用到这个领域。 与各国的选举委员会的成员坐在一起， 进行争论，定义和精煉这些草稿， 并最终于2014年11月 在开罗发表。 一路走来，我们成绩斐然， 总共发行了一万份副本。 直至今日，已经有 3000多份PDF下载件了。 我最近刚从一个同事那儿听说， 他们要把这份文件带去索马里。 他们将做一份索马里的版本， 因为索马里还什么都没有。 所以，这听起来不错。 这份新形成的 阿拉伯选举管理体制， 就是用于规范 在该地区的 选举流程的这份文件， 他们也正在使用了。 阿拉伯联盟现在也建立了 一个通用阿拉伯观察中心， 而且他们正在使用它。 这听起来都很好。")
 
-print out 
-"""	
+#print out 
 def main(arguments):
-    parser = argparse.ArgumentParser(description=__doc__,formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    parser.add_argument('--s', help="", type=int, default=50000)
-    args = parser.parse_args(arguments)
-"""
+	pararg = argparse.ArgumentParser(description=__doc__,formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+	pararg.add_argument('--i', help="input file", type=str,default="")
+	pararg.add_argument('--o', help="output file", type=str,default="")
+	pararg.add_argument('--mode', help="output file", type=str,choices=('interactive', 'batch'),default="interactive")
+	args = pararg.parse_args(arguments)
+	if args.mode!="interactive":
+		file1 = open(args.i,"r")
+		file2 = open(args.o,"w")
+ 		text = file1.readlines()
+		for pg in text:
+			out = segment(pg.decode("utf8"))
+			file2.write(out)
+		file1.close()
+		file2.close()
+	else:
+		x=""
+		while x!="quit":
+			x=raw_input("Paragraph:")		
+			out = segment(x.decode("utf8")).split("\n")
+			print "############Segment Result:############"
+			for i in xrange(0,len(out)):
+				print "line %s:%s"%(str(i),out[i])
+
+if __name__=="__main__":
+	main(sys.argv[1:])
+
