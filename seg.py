@@ -26,9 +26,9 @@ labeller.load(model_dir+"srl")
 
 def parse(sent):
   #this functions detects the structure of a sentence
-  if len(sent)<4:
+  if len(sent)<12:
 	return "el"
-  if len(sent)>20:
+  if len(sent)>60:
 	return "el"
   words = segmentor.segment(sent.strip())  #word segmentation
   postags = postagger.postag(words)  #pos tagging
@@ -74,17 +74,18 @@ def segment(paragraph):
 				out = out + sents[i] + "\n"
 			elif wst[i]=="svo" and wst[i+1]=="vo":
 				out = out + sents[i] + " "
+			elif wst[i]=="sv" and (wst[i+1]=="sv" or wst[i+1]=="svo"):
+				out = out + sents[i] + "\n"
+			elif wst[i]=="vo" and (wst[i+1]=="sv" or wst[i+1]=="svo"):
+				out = out + sents[i] + "\n"
 			else:
 				out = out + sents[i] + " "
 		out = out + sents[len(sents)-1]
-		out = re.sub(" ","",out)
+		#out = re.sub(" ","",out)
 		out = out.strip() + "\n"
 
 	return out.encode("utf8")
 	
-#out = segment(u" 因此，我很高兴地告诉你们， 我们花了三年时间 去完成这项任务，完成最终稿， 并使他们真正应用到这个领域。 与各国的选举委员会的成员坐在一起， 进行争论，定义和精煉这些草稿， 并最终于2014年11月 在开罗发表。 一路走来，我们成绩斐然， 总共发行了一万份副本。 直至今日，已经有 3000多份PDF下载件了。 我最近刚从一个同事那儿听说， 他们要把这份文件带去索马里。 他们将做一份索马里的版本， 因为索马里还什么都没有。 所以，这听起来不错。 这份新形成的 阿拉伯选举管理体制， 就是用于规范 在该地区的 选举流程的这份文件， 他们也正在使用了。 阿拉伯联盟现在也建立了 一个通用阿拉伯观察中心， 而且他们正在使用它。 这听起来都很好。")
-
-#print out 
 def main(arguments):
 	pararg = argparse.ArgumentParser(description=__doc__,formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 	pararg.add_argument('--i', help="input file", type=str,default="")
@@ -104,7 +105,7 @@ def main(arguments):
 		x=""
 		while x!="quit":
 			x=raw_input("Paragraph:")		
-			out = segment(x.decode("utf8")).split("\n")
+			out = segment(x.decode("utf8")).strip().split("\n")
 			print "############Segment Result:############"
 			for i in xrange(0,len(out)):
 				print "line %s:%s"%(str(i),out[i])
