@@ -3,11 +3,11 @@
 [LTP](https://github.com/HIT-SCIR/pyltp)
 
 ###Install
-1. Install package
+Install package
 ```
 sudo pip install pyltp
 ```
-2. Download model
+Download model
 
 (https://pan.baidu.com/share/link?shareid=1988562907&uk=2738088569#list/path=%2F)
 ##Usage
