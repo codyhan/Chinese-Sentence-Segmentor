@@ -1,6 +1,7 @@
 # Chinese-Sentence-Segmentor
 ##Dependency
-1. [LTP](https://github.com/HIT-SCIR/pyltp)
+[LTP](https://github.com/HIT-SCIR/pyltp)
+
 ###Install
 1. Install package
 ```
