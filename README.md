@@ -1,4 +1,5 @@
 # Chinese-Sentence-Segmentor
+The problem of segmenting Chinese sentences is described in a paper [Chinese sentence segmentation as comma classification](http://www.aclweb.org/anthology/P11-2111)
 ##Dependency
 [LTP](https://github.com/HIT-SCIR/pyltp)
 
