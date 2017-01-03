@@ -11,7 +11,8 @@ import sys
 model_dir = "/home/han/Ltp/3.3.1/ltp_data/"
 comma_punc=re.compile(r"[，：: ]".decode("utf8"))
 period_punc=re.compile(r"[。？！；?!;]".decode("utf8"))
-
+del_punc=re.compile(r"[‘’“” ]".decode("utf8"))
+sub_punc=re.compile(r"[，]".decode("utf8"))
 ###load models
 segmentor = Segmentor()
 segmentor.load(model_dir+"cws.model")
@@ -57,9 +58,11 @@ def parse(sent):
 	return "el"
 
 
-def segment(paragraph):
+def seg_punc(paragraph):
 #paragraph must be decoded as utf8 when calling this function
-	pg = re.split(period_punc,paragraph.strip())
+#segment by punctuations.
+	pg = re.sub(del_punc,"",paragraph.strip())
+	pg = re.split(period_punc,pg)
 	pg = [s for s in pg if len(s)!=0]
 	out = ""
 	for sents in pg:
@@ -67,11 +70,24 @@ def segment(paragraph):
 		sents = [s for s in sents if len(s)!=0]
 		out = out + "\n".join(sents)
 		out = out.strip() + "\n"
+	out = re.sub(sub_punc,",",out)
 	return out.encode("utf8")
 
-def segment1(paragraph):
+def seg_prd(paragraph):
 #paragraph must be decoded as utf8 when calling this function
-	pg = re.split(period_punc,paragraph.strip())
+#segment by period.
+	pg = re.sub(del_punc,"",paragraph.strip())
+	pg = re.split(period_punc,pg)
+	pg = [s for s in pg if len(s)!=0]
+	pg = "\n".join(pg)+"\n"
+	pg = re.sub(sub_punc,",",pg)
+	return pg.encode("utf8")
+
+def seg_sync(paragraph):
+#paragraph must be decoded as utf8 when calling this function
+#segment by syntatic parsing.
+	pg = re.sub(del_punc,"",paragraph.strip())
+	pg = re.split(period_punc,pg)
         #print "\n".join(pg)
 	pg = [s for s in pg if len(s)!=0]
 	out = ""
@@ -97,14 +113,14 @@ def segment1(paragraph):
 		out = out + sents[len(sents)-1]
 		#out = re.sub(" ","",out)
 		out = out.strip() + "\n"
-
+		out = re.sub(sub_punc,",",out)
 	return out.encode("utf8")
 	
 def main(arguments):
 	pararg = argparse.ArgumentParser(description=__doc__,formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 	pararg.add_argument('-i', help="input file", type=str,default="")
 	pararg.add_argument('-o', help="output file", type=str,default="")
-	pararg.add_argument('-method', help="the approach to split a paragraph",choices=('punc', 'synt'),type=str,default="punc")
+	pararg.add_argument('-method', help="the approach to split a paragraph",choices=('punc', 'synt','prd'),type=str,default="prd")
 	pararg.add_argument('-mode', help="output file", type=str,choices=('interactive', 'batch'),default="interactive")
 	args = pararg.parse_args(arguments)
 	if args.mode!="interactive":
@@ -124,9 +140,11 @@ def main(arguments):
 		while x!="quit":
 			x=raw_input("Paragraph:")		
 			if args.method=="punc":
-				out = segment(x.decode("utf8")).strip().split("\n")
+				out = seg_punc(x.decode("utf8")).strip().split("\n")
+			elif args.method=="synt":
+				out = seg_synt(x.decode("utf8")).strip().split("\n")
 			else:
-				out = segment1(x.decode("utf8")).strip().split("\n")
+				out = seg_prd(x.decode("utf8")).strip().split("\n")
 			print "############Segment Result:############"
 			for i in xrange(0,len(out)):
 				print "line %s:%s"%(str(i),out[i])
